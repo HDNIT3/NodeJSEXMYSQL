@@ -1,4 +1,5 @@
 const sequelize = require('../config/database');
+const bcryptjs = require('bcryptjs')
 
 const { DataTypes } = require('sequelize');
 
@@ -32,8 +33,17 @@ const Account = sequelize.define('Account', {
     }
 }, {
     tableName: "account",
-    timestamps: false
+    timestamps: false,
+    hooks: {
+        beforeCreate: async (account) => {
+            if (account.password) {
+                account.password = await bcryptjs.hashSync(account.password, 10);
+            }
+        }
+    }
 });
+
+
 
 // sequelize.sync({ force: true }) // Use { force: true } only in development to recreate tables
 // .then(() => {
