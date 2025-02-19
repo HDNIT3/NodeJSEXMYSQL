@@ -2,6 +2,8 @@ const Account = require("../models/account")
 const bcryptjs = require("bcryptjs")
 const validate = require("../validation/account");
 const ErrorResponse = require("../helpers/ErrorResponse")
+const jwt = require("jsonwebtoken")
+require("dotenv").config()
 
 module.exports = {
     login: async(req,res) => {
@@ -19,10 +21,34 @@ module.exports = {
             throw new ErrorResponse(400,"Tài khoản hoặc mật khẩu không đúng")
         }
 
-        return res.status(200).json({
-            StatusCode: 200,
-            message: "Đăng nhập thành công"
-        })
+        try {
+            const payload = {
+                username,
+                email: usersEnter.email,
+                phone: usersEnter.phone
+            }
+    
+            const Webtoken = jwt.sign(
+                payload,
+                process.env.JWT,
+                {
+                    expiresIn: "30s"
+                }
+            )
+
+            return res.status(200).json({
+                StatusCode: 200,
+                AccessToken: Webtoken,
+                message: "Đăng nhập thành công",
+                user :{
+                    user: username,
+                    email: usersEnter.email
+                }
+            })
+
+        } catch (error) {
+            throw new ErrorResponse("400","Lỗi Jwt")
+        }
     }
     ,
     register: async(req,res) => {
